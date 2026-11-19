@@ -1,8 +1,8 @@
 <?php 
-$name = $gender =$tel = $address='';
-$name_err=$gender_err=$tel_err=$address_err=$file_err='';
+$name = $gender = $tel = $address = '';
+$name_err = $gender_err = $tel_err = $address_err = $photo_err = '';
 
-if($_SERVER['REQUEST_METHOD']=='POST'){
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // 1. Validation ឈ្មោះ
     if (empty(trim($_POST["name"]))) {
         $name_err = "សូមបញ្ចូលឈ្មោះរបស់អ្នក។";
@@ -33,51 +33,48 @@ if($_SERVER['REQUEST_METHOD']=='POST'){
         $address = htmlspecialchars(trim($_POST["address"]));
     }
 
-    // 5. Validation ឯកសារ (File Upload)
-    $file_dest = "";
-    if (isset($_FILES["file"]) && $_FILES["file"]["error"] == 0) {
-        $allowed = ["jpg" => "image/jpeg", "png" => "image/png", "pdf" => "application/pdf"];
-        $filename = $_FILES["file"]["name"];
-        $filetype = $_FILES["file"]["type"];
-        $filesize = $_FILES["file"]["size"];
+    // 5. Validation រូបថត (Photo Upload)
+    $photo_dest = "";
+    if (isset($_FILES["photo"]) && $_FILES["photo"]["error"] == 0) {
+        $allowed = ["jpg" => "image/jpeg", "jpeg" => "image/jpeg", "png" => "image/png"];
+        $filename = $_FILES["photo"]["name"];
+        $filetype = $_FILES["photo"]["type"];
+        $filesize = $_FILES["photo"]["size"];
 
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        // ពិនិត្យប្រភេទ File
         if (!array_key_exists($ext, $allowed)) {
-            $file_err = "សូមជ្រើសរើស File ជា JPG, PNG ឬ PDF ប៉ុណ្ណោះ។";
-        }
-        // ពិនិត្យទំហំ (អតិបរមា 2MB)
-        elseif ($filesize > 2 * 1024 * 1024) {
-            $file_err = "ទំហំ File មិនត្រូវលើសពី 2MB ឡើយ។";
+            $photo_err = "សូមជ្រើសរើសរូបថតជា JPG, JPEG ឬ PNG ប៉ុណ្ណោះ។";
+        } elseif (!in_array($filetype, $allowed, true)) {
+            $photo_err = "ប្រភេទរូបថតមិនត្រឹមត្រូវ។";
+        } elseif ($filesize > 2 * 1024 * 1024) {
+            $photo_err = "ទំហំរូបថតមិនត្រូវលើសពី 2MB ឡើយ។";
         } else {
-            // បង្កើត folder uploads បើមិនទាន់មាន
             if (!is_dir("uploads")) {
                 mkdir("uploads", 0777, true);
             }
             $new_filename = time() . "_" . basename($filename);
-            $file_dest = "uploads/" . $new_filename;
-            move_uploaded_file($_FILES["file"]["tmp_name"], $file_dest);
+            $photo_dest = "uploads/" . $new_filename;
+            move_uploaded_file($_FILES["photo"]["tmp_name"], $photo_dest);
         }
     } else {
-        $file_err = "សូមជ្រើសរើសឯកសារភ្ជាប់មួយ។";
+        $photo_err = "សូមជ្រើសរើសរូបថតមួយ។";
     }
-    // បើគ្មានកំហុសអ្វីទាំងអស់ បញ្ជូនទិន្នន័យទៅ display.php តាមរយៈ Session
-    if (empty($name_err) && empty($gender_err) && empty($tel_err) && empty($address_err) && empty($file_err)) {
+
+    // បើគ្មានកំហុសអ្វីទាំងអស់ បញ្ជូនទិន្នន័យទៅ profile.php តាមរយៈ Session
+    if (empty($name_err) && empty($gender_err) && empty($tel_err) && empty($address_err) && empty($photo_err)) {
         session_start();
         $_SESSION['form_data'] = [
             'name' => $name,
             'gender' => $gender,
             'tel' => $tel,
             'address' => $address,
-            'file' => $file_dest
+            'photo' => $photo_dest
         ];
         header("Location: profile.php");
         exit();
     }
-
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -125,9 +122,9 @@ if($_SERVER['REQUEST_METHOD']=='POST'){
     </div>
 
     <div class="form-group">
-        <label>ឯកសារភ្ជាប់ (រូបភាព/PDF):</label>
-        <input type="file" name="file">
-        <div class="error"><?php echo $file_err; ?></div>
+        <label>រូបថត:</label>
+        <input type="file" name="photo" accept="image/*">
+        <div class="error"><?php echo $photo_err; ?></div>
     </div>
 
     <button type="submit">Submit</button>

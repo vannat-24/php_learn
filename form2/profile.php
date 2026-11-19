@@ -43,10 +43,19 @@ $data = $_SESSION['form_data'];
         <td><?php echo nl2br($data['address']); ?></td>
     </tr>
     <tr>
-        <th>ឯកសារភ្ជាប់</th>
+        <th>រូបថត</th>
         <td>
-            <?php if (!empty($data['file'])): ?>
-                <a href="<?php echo $data['file']; ?>" target="_blank">មើលឯកសារ</a>
+            <?php if (!empty($data['photo'])): ?>
+                <?php
+                    $fileUrl = htmlspecialchars($data['photo'], ENT_QUOTES, 'UTF-8');
+                    $extension = strtolower(pathinfo($data['photo'], PATHINFO_EXTENSION));
+                ?>
+                <?php if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)): ?>
+                    <img src="<?php echo $fileUrl; ?>" alt="រូបភាពដែលបានភ្ជាប់" style="max-width: 200px; height: auto; display: block;">
+                    <a href="<?php echo $fileUrl; ?>" target="_blank" rel="noopener">មើលរូបភាព</a>
+                <?php else: ?>
+                    <a href="<?php echo $fileUrl; ?>" target="_blank" rel="noopener">មើលឯកសារ</a>
+                <?php endif; ?>
             <?php else: ?>
                 គ្មាន
             <?php endif; ?>
